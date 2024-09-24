@@ -5,7 +5,7 @@
 
 # 函数
 
-**func NewProgress(name string, percentage float64) *Progress**
+### func NewProgress(name string, percentage float64) *Progress
 
 创建一个进度
 
@@ -16,13 +16,13 @@
 
 # 方法
 
-**func AddSubTask(subTask *Progress) error**
+### func AddSubTask(subTask *Progress) error
 
 添加子任务
 
 
 
-**func SetProgress(value float64)**
+### func SetProgress(value float64)
 
 设置进度
 

@@ -2,6 +2,7 @@ package progress
 
 import (
 	"errors"
+	"sync"
 )
 
 // Progress 结构体表示一个进度单元
@@ -10,6 +11,7 @@ type Progress struct {
 	value      float64     // 当前进度值
 	percentage float64     // 占比，0表示未设置
 	subTasks   []*Progress // 子任务进度
+	mu         sync.RWMutex
 }
 
 // NewProgress 创建一个新的 Progress 实例
@@ -21,6 +23,8 @@ func NewProgress(name string, percentage float64) *Progress {
 }
 
 func (p *Progress) SetProgress(value float64) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
 	if value > 100 {
 		value = 100
 	}
@@ -49,6 +53,9 @@ func (p *Progress) AddSubTask(subTask *Progress) error {
 
 // CalculateTotalProgress 计算总进度
 func (p *Progress) CalculateTotalProgress() (float64, error) {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+
 	// 如果没有子任务
 	if len(p.subTasks) == 0 {
 		return p.value, nil
