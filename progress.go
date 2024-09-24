@@ -2,6 +2,8 @@ package progress
 
 import (
 	"errors"
+	"github.com/olekukonko/tablewriter"
+	"os"
 	"sync"
 )
 
@@ -56,31 +58,34 @@ func (p *Progress) CalculateTotalProgress() (float64, error) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 
-	// 如果没有子任务
 	if len(p.subTasks) == 0 {
 		return p.value, nil
 	}
 
-	totalProgress := 0.0 // 初始化总进度为0
+	totalProgress := 0.0
 
-	// 遍历所有子任务
 	for _, subTask := range p.subTasks {
-
-		// 递归计算子任务的进度
 		subProgress, err := subTask.CalculateTotalProgress()
 		if err != nil {
-			// 如果计算子任务进度时出错，返回错误
 			return 0, err
 		}
 		if subTask.percentage != 0 {
-			// 如果子任务设置了占比，将子任务的进度乘以该占比并加到总进度中
 			totalProgress += subProgress * (subTask.percentage / 100)
 		} else {
-			// 如果子任务设置了占比，将子任务的进度乘以该占比并加到总进度中
 			totalProgress += subProgress * ((100.0 / float64(len(p.subTasks))) / 100)
 		}
 	}
 
-	// 返回计算得到的总进度
 	return totalProgress, nil
+}
+
+// DisplayProgress 显示进度的表格
+func (p *Progress) DisplayProgress() {
+	data := CollectData(p)
+	normalizedData := NormalizeRows(data)
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetAutoMergeCells(true)
+	table.SetRowLine(true)
+	table.AppendBulk(normalizedData)
+	table.Render()
 }
